@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrowdFlowAI - Stadium Decision Engine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <header class="app-header">
+        <div class="logo">
+            <span class="icon">🏟️</span>
+            <h1>CrowdFlowAI</h1>
+        </div>
+        <div class="event-info">
+            <span class="badge">Event: Championship Final</span>
+            <span class="badge highlight phase-display">⏱ Phase: Pre-event</span>
+        </div>
+    </header>
+
+    <main class="dashboard">
+        <!-- LEFT: Stadium Visualizer -->
+        <section class="panel map-panel">
+            <div class="panel-header">
+                <h2>Stadium Live Map</h2>
+                <div class="legend">
+                    <span>Density:</span>
+                    <div class="legend-scale">
+                        <div class="color-box" style="background:#22c55e;"></div><small>Low</small>
+                        <div class="color-box" style="background:#eab308;"></div><small>Med</small>
+                        <div class="color-box" style="background:#f97316;"></div><small>High</small>
+                        <div class="color-box" style="background:#ef4444;"></div><small>Max</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="canvas-container">
+                <canvas id="stadiumCanvas" width="800" height="800"></canvas>
+            </div>
+            <div class="tooltip" id="mapTooltip" style="display: none;"></div>
+        </section>
+
+
+        <!-- RIGHT: Decision Engine Controls -->
+        <section class="panel decision-panel">
+            <div class="panel-header">
+                <h2>🎯 Decision Engine</h2>
+            </div>
+
+            <div class="controls-form">
+                <div class="form-group">
+                    <label for="intentSelect">User Intent</label>
+                    <select id="intentSelect">
+                        <option value="food">🍔 Grab Food / Drinks</option>
+                        <option value="restroom">🚻 Restroom</option>
+                        <option value="seat">🎟️ Return to Seat</option>
+                        <option value="merchandise">👕 Buy Merchandise</option>
+                        <option value="exit">🚪 Exit Stadium</option>
+                        <option value="emergency">🚨 Emergency / First Aid</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="locationSelect">Current Location (Click map or select)</label>
+                    <select id="locationSelect">
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+
+                <button id="btnDecide" class="primary-btn glow-btn">
+                    <span class="btn-text">Get Recommendation</span>
+                    <div class="loader" style="display:none;"></div>
+                </button>
+            </div>
+
+            <div id="resultsContainer" class="results-container" style="display:none;">
+                <div class="best-option highlight-card">
+                    <div class="ribbon">✅ Best Option</div>
+                    <h3 id="resBestName">Food Court B</h3>
+                    
+                    <div class="metrics-grid">
+                        <div class="metric">
+                            <span class="metric-icon">⏱</span>
+                            <span class="metric-label">Total Time</span>
+                            <strong class="metric-value" id="resTotal">4.2 min</strong>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-icon">🚶</span>
+                            <span class="metric-label">Walk</span>
+                            <strong class="metric-value" id="resWalk">1.8 min</strong>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-icon">⏳</span>
+                            <span class="metric-label">Wait</span>
+                            <strong class="metric-value" id="resWait">2.4 min</strong>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-icon">📊</span>
+                            <span class="metric-label">Density</span>
+                            <strong class="metric-value" id="resDensity">42%</strong>
+                        </div>
+                    </div>
+
+                    <p id="resReasoning" class="reasoning-text">Calculating optimal route...</p>
+                </div>
+
+                <div class="alternatives-section">
+                    <h4>Alternative Options</h4>
+                    <ul id="alternativesList" class="alt-list">
+                        <!-- Populated by JS -->
+                    </ul>
+                </div>
+
+                <div class="json-toggle">
+                    <button id="btnToggleJson" class="ghost-btn">📋 View API JSON Response</button>
+                    <pre id="jsonOutput" style="display:none;"></pre>
+                </div>
+            </div>
+        </section>
+    </main>
+
+
+    <!-- BOTTOM: Simulation Controls & Analytics -->
+    <footer class="bottom-bar">
+        <div class="sim-controls">
+            <h3>Simulation Engine</h3>
+            
+            <div class="phases">
+                <button class="phase-btn active" data-phase="Pre-event">Pre-event</button>
+                <button class="phase-btn" data-phase="Active">Active Match</button>
+                <button class="phase-btn" data-phase="Halftime">Halftime</button>
+                <button class="phase-btn" data-phase="Post-event">Post-event</button>
+                <button class="phase-btn warning" data-phase="Emergency">Emergency</button>
+            </div>
+        </div>
+        
+        <div class="stats-overview">
+            <div class="stat-box">
+                <span class="label">Total Crowd</span>
+                <strong class="val" id="statCrowd">0</strong>
+            </div>
+            <div class="stat-box">
+                <span class="label">Avg Venue Density</span>
+                <strong class="val" id="statDensity">0%</strong>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/stadiumMap.js"></script>
+    <script src="js/decisionPanel.js"></script>
+    <script src="js/simulation.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

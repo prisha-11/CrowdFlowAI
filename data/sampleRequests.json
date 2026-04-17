@@ -1,0 +1,23 @@
+[
+  {
+    "userIntent": "food",
+    "currentLocation": {
+      "zone": "section_w"
+    },
+    "urgency": "normal"
+  },
+  {
+    "userIntent": "restroom",
+    "currentLocation": {
+      "zone": "concourse_e"
+    },
+    "urgency": "high"
+  },
+  {
+    "userIntent": "exit",
+    "currentLocation": {
+      "zone": "section_s"
+    },
+    "urgency": "normal"
+  }
+]
