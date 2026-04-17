@@ -37,7 +37,7 @@
             </div>
             
             <div class="canvas-container">
-                <canvas id="stadiumCanvas" width="800" height="800"></canvas>
+                <canvas id="stadiumCanvas" width="800" height="800" role="img" aria-label="Interactive Stadium Map"></canvas>
             </div>
             <div class="tooltip" id="mapTooltip" style="display: none;"></div>
         </section>
@@ -52,7 +52,7 @@
             <div class="controls-form">
                 <div class="form-group">
                     <label for="intentSelect">User Intent</label>
-                    <select id="intentSelect">
+                    <select id="intentSelect" name="intentSelect" aria-label="Select User Intent">
                         <option value="food">🍔 Grab Food / Drinks</option>
                         <option value="restroom">🚻 Restroom</option>
                         <option value="seat">🎟️ Return to Seat</option>
@@ -64,12 +64,12 @@
 
                 <div class="form-group">
                     <label for="locationSelect">Current Location (Click map or select)</label>
-                    <select id="locationSelect">
+                    <select id="locationSelect" name="locationSelect" aria-label="Select Current Location">
                         <!-- Populated by JS -->
                     </select>
                 </div>
 
-                <button id="btnDecide" class="primary-btn glow-btn">
+                <button id="btnDecide" class="primary-btn glow-btn" aria-label="Get Route Recommendation">
                     <span class="btn-text">Get Recommendation</span>
                     <div class="loader" style="display:none;"></div>
                 </button>
@@ -114,7 +114,7 @@
                 </div>
 
                 <div class="json-toggle">
-                    <button id="btnToggleJson" class="ghost-btn">📋 View API JSON Response</button>
+                    <button id="btnToggleJson" class="ghost-btn" aria-label="Toggle API JSON Response View">📋 View API JSON Response</button>
                     <pre id="jsonOutput" style="display:none;"></pre>
                 </div>
             </div>
@@ -128,11 +128,11 @@
             <h3>Simulation Engine</h3>
             
             <div class="phases">
-                <button class="phase-btn active" data-phase="Pre-event">Pre-event</button>
-                <button class="phase-btn" data-phase="Active">Active Match</button>
-                <button class="phase-btn" data-phase="Halftime">Halftime</button>
-                <button class="phase-btn" data-phase="Post-event">Post-event</button>
-                <button class="phase-btn warning" data-phase="Emergency">Emergency</button>
+                <button class="phase-btn active" data-phase="Pre-event" aria-label="Set phase to Pre-event">Pre-event</button>
+                <button class="phase-btn" data-phase="Active" aria-label="Set phase to Active Match">Active Match</button>
+                <button class="phase-btn" data-phase="Halftime" aria-label="Set phase to Halftime">Halftime</button>
+                <button class="phase-btn" data-phase="Post-event" aria-label="Set phase to Post-event">Post-event</button>
+                <button class="phase-btn warning" data-phase="Emergency" aria-label="Set phase to Emergency">Emergency</button>
             </div>
         </div>
         

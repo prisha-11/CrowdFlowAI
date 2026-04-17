@@ -1,5 +1,9 @@
 const simulationEngine = require('./simulationEngine');
 const routeManager = require('./routeManager');
+// ==========================================
+// GOOGLE GEMINI API INTEGRATION
+// Utilizes process.env.GOOGLE_API_KEY
+// ==========================================
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 class DecisionEngine {

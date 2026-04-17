@@ -49,8 +49,13 @@ app.post('/api/decide', async (req, res) => {
     try {
         const { userIntent, currentLocation, urgency, preferences } = req.body;
         
-        if (!userIntent || !currentLocation || !currentLocation.zone) {
-            return res.status(400).json({ error: "Missing required fields: userIntent, currentLocation.zone" });
+        const allowedIntents = ['food', 'restroom', 'exit', 'merchandise', 'first_aid', 'emergency', 'seat'];
+        
+        if (typeof userIntent !== 'string' || !allowedIntents.includes(userIntent)) {
+            return res.status(400).json({ error: "Invalid or missing userIntent" });
+        }
+        if (!currentLocation || typeof currentLocation.zone !== 'string') {
+            return res.status(400).json({ error: "Invalid or missing currentLocation.zone" });
         }
 
         const decision = await decisionEngine.decide(
