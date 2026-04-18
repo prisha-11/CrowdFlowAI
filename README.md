@@ -37,6 +37,14 @@ The system intelligently guides users by making context-aware decisions that red
 This is a Node.js full-stack application.
 - **Frontend**: Vanilla Javascript utilizing HTML5 `<canvas>` for real-time map rendering. No build tools required for the frontend.
 - **Backend API**: Express.js serving the `engine/` logic which recalculates state dynamically.
+  
+  ## Architecture
+- Data Layer: Simulation engine
+- Decision Layer: Gemini AI + fallback logic
+- API Layer: Express server
+
+## Reliability
+System includes fallback logic if AI fails and logs decision flow for robustness.
 
 ### API Examples
 
