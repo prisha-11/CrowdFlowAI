@@ -176,7 +176,39 @@ class DecisionEngine {
         };
     }
 
-    async decideAI(userIntent, currentLocationId, urgency, preferences, evaluatedOptions, state) {
+    _buildAIPrompt(userIntent, currentLocationId, urgency, evaluatedOptions, state) {
+        const optionsForPrompt = evaluatedOptions.map(opt => ({
+            id: opt.id,
+            name: opt.name,
+            type: opt.type,
+            crowdDensity: opt.crowdDensity,
+            estimatedWaitTime: opt.estimatedWaitTime,
+            distance: opt.distance,
+            totalEstimatedTime: opt.totalEstimatedTime
+        }));
+
+        return `You are an AI CrowdFlow Decision Engine for stadium environments, where users face overcrowding, long wait times, and inefficient movement.
+Current Event Phase: ${state.phase}
+User Intent: ${userIntent}
+Urgency: ${urgency}
+Current Location ID: ${currentLocationId}
+Options: ${JSON.stringify(optionsForPrompt)}
+
+Analyze all options and select the optimal one.
+Rules:
+- Minimize total time (travel + wait).
+- Avoid congestion (high crowd density).
+- Scenario logic:
+  - pre-event: prioritize minimal walking.
+  - active match: balance all factors normally.
+  - halftime: avoid crowded food/restroom areas.
+  - post-event: prioritize efficient exits.
+  - emergency: override everything to choose the fastest and safest exit.
+
+Output JSON only. Ensure bestOptionId corresponds to an option in the list. Provide alternative IDs and a short reason for each alternative.`;
+    }
+
+    async _invokeGeminiModel(prompt) {
         if (!this.genAI) {
             throw new Error("Gemini AI is not initialized (missing API Key).");
         }
@@ -207,45 +239,26 @@ class DecisionEngine {
             }
         });
 
-        // Strip routes from options just for the prompt to save tokens
-        const optionsForPrompt = evaluatedOptions.map(opt => ({
-            id: opt.id,
-            name: opt.name,
-            type: opt.type,
-            crowdDensity: opt.crowdDensity,
-            estimatedWaitTime: opt.estimatedWaitTime,
-            distance: opt.distance,
-            totalEstimatedTime: opt.totalEstimatedTime
-        }));
-
-        const prompt = `You are an AI CrowdFlow Decision Engine for stadium environments, where users face overcrowding, long wait times, and inefficient movement.
-Current Event Phase: ${state.phase}
-User Intent: ${userIntent}
-Urgency: ${urgency}
-Current Location ID: ${currentLocationId}
-Options: ${JSON.stringify(optionsForPrompt)}
-
-Analyze all options and select the optimal one.
-Rules:
-- Minimize total time (travel + wait).
-- Avoid congestion (high crowd density).
-- Scenario logic:
-  - pre-event: prioritize minimal walking.
-  - active match: balance all factors normally.
-  - halftime: avoid crowded food/restroom areas.
-  - post-event: prioritize efficient exits.
-  - emergency: override everything to choose the fastest and safest exit.
-
-Output JSON only. Ensure bestOptionId corresponds to an option in the list. Provide alternative IDs and a short reason for each alternative.`;
-
+        console.log(`[AI Decision Engine] Invoking Gemini model for decision...`);
         const result = await model.generateContent(prompt);
-        const text = result.response.text();
-        const jsonResponse = JSON.parse(text);
+        return result.response.text();
+    }
+
+    _parseAIResponse(text, evaluatedOptions, state) {
+        let jsonResponse;
+        try {
+            jsonResponse = JSON.parse(text);
+        } catch (e) {
+            console.error("[AI Decision Engine] Failed to parse JSON response:", text);
+            throw new Error("Malformed JSON response from AI");
+        }
+        
+        console.log(`[AI Decision Engine] Received properly formatted JSON response.`);
 
         const bestId = jsonResponse.bestOptionId;
         let bestOpt = evaluatedOptions.find(o => o.id === bestId);
         if (!bestOpt) {
-            // fallback if AI suggested something invalid
+            console.warn(`[AI Decision Engine] AI suggested invalid destination ID: ${bestId}. Defaulting to safest rule-base option.`);
             bestOpt = evaluatedOptions[0];
         }
 
@@ -283,11 +296,17 @@ Output JSON only. Ensure bestOptionId corresponds to an option in the list. Prov
                 avoidedZones: [] 
             },
             reasoning: jsonResponse.reasoning,
-            alternatives: alternatives.slice(0, 3), // limit up to 3 alternatives
+            alternatives: alternatives.slice(0, 3),
             alerts: state.zones[bestOpt.id].crowdDensity > 0.85 ? ["Warning: Destination is currently at high capacity."] : [],
             timestamp: new Date().toISOString(),
             engine: "AI"
         };
+    }
+
+    async decideAI(userIntent, currentLocationId, urgency, preferences, evaluatedOptions, state) {
+        const prompt = this._buildAIPrompt(userIntent, currentLocationId, urgency, evaluatedOptions, state);
+        const textResponse = await this._invokeGeminiModel(prompt);
+        return this._parseAIResponse(textResponse, evaluatedOptions, state);
     }
 
     async decide(userIntent, currentLocationId, urgency = 'normal', preferences = {}) {

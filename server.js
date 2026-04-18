@@ -20,7 +20,13 @@ setInterval(() => {
 }, 2000); // UI polls every 2 seconds, engine updates every 2 seconds to provide smooth changes
 
 
-// --- API ENDPOINTS ---
+// ==========================================
+// API LAYER (Routing and Validations)
+// ==========================================
+// NOTE: Cloud Run operates statelessly per instance. 
+// Simulation properties exist per container in this mock, but decision endpoints 
+// dynamically pull the freshest state, preventing race conditions.
+
 
 // 1. Get Venue Data
 app.get('/api/venues', (req, res) => {
@@ -49,20 +55,27 @@ app.post('/api/decide', async (req, res) => {
     try {
         const { userIntent, currentLocation, urgency, preferences } = req.body;
         
+        // Strict Input Sanitization
         const allowedIntents = ['food', 'restroom', 'exit', 'merchandise', 'first_aid', 'emergency', 'seat'];
-        
-        if (typeof userIntent !== 'string' || !allowedIntents.includes(userIntent)) {
-            return res.status(400).json({ error: "Invalid or missing userIntent" });
+        const sanitizedIntent = String(userIntent).trim();
+        const sanitizedLocationId = String(currentLocation ? currentLocation.zone : '').trim();
+
+        if (!sanitizedIntent || !allowedIntents.includes(sanitizedIntent)) {
+            return res.status(400).json({ error: `Invalid intent: ${sanitizedIntent}` });
         }
-        if (!currentLocation || typeof currentLocation.zone !== 'string') {
-            return res.status(400).json({ error: "Invalid or missing currentLocation.zone" });
+        if (!sanitizedLocationId || sanitizedLocationId === 'undefined') {
+            return res.status(400).json({ error: `Invalid location ID: ${sanitizedLocationId}` });
         }
 
+        // Additional optional bounds checking
+        let sanitizedUrgency = 'normal';
+        if (urgency === 'high' || urgency === 'low') sanitizedUrgency = urgency;
+
         const decision = await decisionEngine.decide(
-            userIntent, 
-            currentLocation.zone, 
-            urgency, 
-            preferences
+            sanitizedIntent, 
+            sanitizedLocationId, 
+            sanitizedUrgency, 
+            preferences || {}
         );
 
         res.json(decision);
